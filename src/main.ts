@@ -17,8 +17,10 @@ const audio = new Audio();
 const app = new App(uiRoot, game, scene, audio);
 canvas.addEventListener('pointerdown', () => app.pointerDown());
 window.addEventListener('resize', () => scene.resize());
+// a finger lifted, cancelled or dragged off the screen must let go of the reel
+window.addEventListener('pointercancel', () => game.send({ type: 'reel', hold: false }));
 
-if (!saved) app.hud.toast('Welcome! Press Space or click to cast, then hold to reel.', 'good');
+if (!saved) app.hud.toast(window.matchMedia('(pointer: coarse)').matches ? 'Welcome! Tap to cast, then press and hold to reel.' : 'Welcome! Press Space or click to cast, then hold to reel.', 'good');
 
 let last = performance.now();
 function frame(now: number): void {

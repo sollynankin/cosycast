@@ -71,7 +71,7 @@ export class Hud {
       const label = !fs ? 'Cast' : fs.phase === 'wait' ? 'Waiting…' : 'Reeling!';
       clear(this.bottom).append(
         h('button.cast' + (fs ? '.busy' : ''), { disabled: fs?.phase === 'reel', onclick: () => (fs ? this.onStop() : this.onCast()) }, fs ? (fs.phase === 'wait' ? 'Reel in' : label) : 'Cast', h('span.keyhint', 'Space')),
-        h('div.small.hint', fs?.phase === 'wait' ? 'Waiting for a bite… (a fish is on its way)' : fs ? 'Hold Space or the mouse to raise the net' : bait ? `Bait: ${bait.name} ×${s.baits[bait.id] ?? 0}` : 'No bait: buy some in the shop'),
+        h('div.small.hint', fs?.phase === 'wait' ? 'Waiting for a bite… (a fish is on its way)' : fs ? 'Press and hold (or Space) to raise the net' : bait ? `Bait: ${bait.name} ×${s.baits[bait.id] ?? 0}` : 'No bait: buy some in the shop'),
         h('div.small.hint', `${RODS[s.gear.rod].name}`),
       );
     }

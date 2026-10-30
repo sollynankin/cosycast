@@ -431,7 +431,7 @@ export class Scene {
     const boat = kind === 'harbour' || kind === 'palms' || kind === 'stars';
     const bob = boat ? Math.sin(this.t * 1.1) * 3 : 0;
     const baseY = horizon + 6 + bob;
-    const px = w * 0.13;
+    const px = Math.max(w * 0.13, 118);
     // pier (planks on posts) or a little boat
     if (boat) {
       g.fillStyle = '#7a4a2a';

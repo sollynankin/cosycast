@@ -108,7 +108,7 @@ export class App {
         break;
       case 'bite':
         this.audio.play('bite');
-        this.hud.toast('A bite! Hold Space or the mouse to reel', 'good');
+        this.hud.toast('A bite! Press and hold to reel', 'good');
         break;
       case 'escape':
         this.audio.play('escape');
