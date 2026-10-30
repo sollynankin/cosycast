@@ -1,4 +1,4 @@
-# Cosy Cast
+# Cosy Catch
 
 A cozy, fishing-only game. Cast a line, hold to reel, and find out what you caught. Sell your fish, or keep the best
 in your aquarium. Level up, buy better gear, and unlock new places with their own fish: 44 species across 7 spots.

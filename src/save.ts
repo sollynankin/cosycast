@@ -5,7 +5,7 @@ import { newGame, SAVE_VERSION, type GameState } from './sim/state';
 const KEY = 'cosycast.save.v1';
 
 export function migrate(raw: Partial<GameState> & { version?: number }): GameState {
-  if (!raw || typeof raw !== 'object' || typeof raw.version !== 'number') throw new Error('Not a Cosy Cast save.');
+  if (!raw || typeof raw !== 'object' || typeof raw.version !== 'number') throw new Error('Not a Cosy Catch save.');
   if (raw.version > SAVE_VERSION) throw new Error('This save is from a newer version of the game.');
   const fresh = newGame(raw.seed ?? 1);
   const s = raw as GameState;
