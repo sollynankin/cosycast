@@ -15,10 +15,8 @@ const game = new Game(saved ?? newGame((Date.now() % 1000000) + 1));
 const scene = new Scene(canvas);
 const audio = new Audio();
 const app = new App(uiRoot, game, scene, audio);
-canvas.addEventListener('pointerdown', () => app.pointerDown());
 window.addEventListener('resize', () => scene.resize());
-// a finger lifted, cancelled or dragged off the screen must let go of the reel
-window.addEventListener('pointercancel', () => game.send({ type: 'reel', hold: false }));
+window.visualViewport?.addEventListener('resize', () => scene.resize());
 
 if (!saved) app.hud.toast(window.matchMedia('(pointer: coarse)').matches ? 'Welcome! Tap to cast, then press and hold to reel.' : 'Welcome! Press Space or click to cast, then hold to reel.', 'good');
 
@@ -29,6 +27,7 @@ function frame(now: number): void {
   game.advance(dt);
   const fs = game.state.fishing;
   scene.draw(game.state, dt, fs?.phase === 'reel' && fs.holding ? 1 : 0);
+  app.frame();
   app.hud.render();
   requestAnimationFrame(frame);
 }

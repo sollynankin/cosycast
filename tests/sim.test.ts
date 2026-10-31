@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BUCKET_CAPACITY, FISH_SIZE_TIRE_TIME, FISH_TIRE_TICKS, QUALITY_PRICE_MULT, xpForLevel } from '../src/data/balance';
+import { BUCKET_CAPACITY, PERFECT_HOOK_BONUS, PERFECT_HOOK_TICKS, FISH_SIZE_TIRE_TIME, FISH_TIRE_TICKS, QUALITY_PRICE_MULT, xpForLevel } from '../src/data/balance';
 import { FISH, getFish } from '../src/data/fish';
 import { BAITS, DECOR, LINES, REELS, RODS, TANKS } from '../src/data/gear';
 import { LOCATIONS } from '../src/data/locations';
@@ -182,7 +182,7 @@ describe('fishing', () => {
       const s = newGame();
       s.gear.rod = rod;
       s.gear.reel = reel;
-      s.fishing = { phase: 'reel', biteIn: 0, species: 'perch', fishPos: 0.5, fishVel: 0, zonePos: 0.4, zoneVel: 0, progress: 0.3, holding: false, retarget: 99, fishTarget: 0.5, lenCm: 20, size: 0.3, difficulty: 0.2, reelTicks: 0 };
+      s.fishing = { phase: 'reel', biteIn: 0, species: 'perch', fishPos: 0.5, fishVel: 0, zonePos: 0.4, zoneVel: 0, progress: 0.3, holding: false, retarget: 99, fishTarget: 0.5, lenCm: 20, size: 0.3, difficulty: 0.2, reelTicks: 0, sinceBite: 0, hooked: false, perfect: false };
       tickFishing(s, []);
       return s.fishing ? s.fishing.progress - 0.3 : 1;
     };
@@ -211,6 +211,47 @@ describe('fishing', () => {
       return JSON.stringify(s);
     };
     expect(play()).toBe(play());
+  });
+});
+
+describe('setting the hook', () => {
+  const reelState = () => {
+    const s = newGame(4);
+    cast(s, []);
+    s.fishing!.biteIn = 1;
+    const ev: SimEvent[] = [];
+    tickFishing(s, ev); // the bite
+    return { s, ev };
+  };
+
+  it('pressing soon after the bite gives a head start and bonus XP; a late press gives none', () => {
+    const quick = reelState();
+    quick.s.fishing!.progress = 0.3;
+    quick.s.fishing!.holding = true;
+    tickFishing(quick.s, quick.ev);
+    expect(quick.ev.some((e) => e.type === 'hook')).toBe(true);
+    expect(quick.s.fishing!.perfect).toBe(true);
+    expect(quick.s.fishing!.progress).toBeGreaterThan(0.3 + PERFECT_HOOK_BONUS - 0.05);
+
+    const late = reelState();
+    for (let t = 0; t < PERFECT_HOOK_TICKS + 3; t++) tickFishing(late.s, late.ev);
+    late.s.fishing!.progress = 0.5;
+    late.s.fishing!.holding = true;
+    tickFishing(late.s, late.ev);
+    expect(late.ev.some((e) => e.type === 'hook')).toBe(false);
+    expect(late.s.fishing!.perfect).toBe(false);
+    expect(late.s.fishing!.hooked).toBe(true);
+  });
+
+  it('holding from before the bite does not count as a perfect hook', () => {
+    const s = newGame(4);
+    cast(s, []);
+    s.fishing!.biteIn = 1;
+    s.fishing!.holding = true;
+    const ev: SimEvent[] = [];
+    tickFishing(s, ev);
+    tickFishing(s, ev);
+    expect(ev.some((e) => e.type === 'hook')).toBe(false);
   });
 });
 

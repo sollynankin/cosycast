@@ -61,6 +61,7 @@ export class Scene {
   private rings: Ring[] = [];
   private drops: Drop[] = [];
   private lastPhase: string = '';
+  private shakeAmount = 0;
   /** the hooked fish's depth and side-to-side drift, for the visible struggle */
   private hookX = 0.62;
 
@@ -79,6 +80,11 @@ export class Scene {
     this.g.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
+  /** a quick jolt of the whole picture (a bite) */
+  shake(strength = 1): void {
+    this.shakeAmount = Math.max(this.shakeAmount, strength);
+  }
+
   /** a burst of water droplets at the surface (bite, landing) */
   splash(strength = 1): void {
     const x = this.w * this.hookX;
@@ -90,6 +96,9 @@ export class Scene {
   draw(state: GameState, dt: number, reelPower = 0): void {
     this.t += dt;
     const { g, w, h } = this;
+    this.shakeAmount = Math.max(0, this.shakeAmount - dt * 3.5);
+    g.save();
+    if (this.shakeAmount > 0) g.translate((Math.sin(this.t * 90) * 6) * this.shakeAmount, (Math.cos(this.t * 80) * 5) * this.shakeAmount);
     const loc = getLocation(state.location);
     const light = daylight(state.minute);
     const horizon = h * 0.4;
@@ -136,6 +145,7 @@ export class Scene {
       g.fillStyle = `rgba(8,12,50,${0.28 * (1 - light)})`;
       g.fillRect(0, 0, w, h);
     }
+    g.restore();
   }
 
   private drawStars(light: number, horizon: number, bright: boolean): void {

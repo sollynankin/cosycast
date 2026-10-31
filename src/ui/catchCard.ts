@@ -15,7 +15,7 @@ type CatchEvent = Extract<SimEvent, { type: 'catch' }>;
 const SIZE_LABEL = ['', 'Silver size ★', 'Gold size ★★'];
 
 export class CatchCard {
-  constructor(private readonly game: Game, private readonly modals: Modals) {}
+  constructor(private readonly game: Game, private readonly modals: Modals, private readonly castAgain: () => void) {}
 
   get open(): boolean {
     return this.modals.isOpen('catch');
@@ -44,10 +44,12 @@ export class CatchCard {
           f.q ? h(`div.catch-size.${f.q === 2 ? 'gold' : 'silver'}`, `${SIZE_LABEL[f.q]} · +${bonus}% price`) : frac < FISH_SILVER_AT ? null : null,
           e.record && !e.discovered ? h('div.catch-record', 'New personal best!') : null,
           e.wornOut ? h('div.small.muted', 'It tired itself out.') : null,
+          e.perfect ? h('div.small.muted', 'Perfect hook: +25% XP') : null,
           h('div.small.muted', `+${fmt(e.xp)} XP${frac >= FISH_GOLD_AT ? ' · a giant!' : ''}`),
           still
             ? h('div.catch-actions',
-                h('button.primary', { onclick: () => { this.game.send({ type: 'sell', uid: f.uid }); close(); } }, `Sell ${fmt(sellValue(f.species, f.q))}g`),
+                h('button.primary', { onclick: () => { close(); this.castAgain(); } }, 'Cast again'),
+                h('button', { onclick: () => { this.game.send({ type: 'sell', uid: f.uid }); close(); } }, `Sell ${fmt(sellValue(f.species, f.q))}g`),
                 h('button', { onclick: () => { this.game.send({ type: 'keep', uid: f.uid }); close(); } }, 'Keep'),
                 h('button.ghost', { onclick: close }, 'Bucket'))
             : h('div.catch-actions', h('button', { onclick: close }, 'Done')),

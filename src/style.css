@@ -13,7 +13,7 @@
 
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; background: #0a1020; user-select: none; font-family: 'Nunito', system-ui, sans-serif; color: var(--ink); }
-#scene { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; }
+#scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #ui { position: fixed; inset: 0; pointer-events: none; font-size: 17px; }
 #ui > * { pointer-events: auto; }
 h2, h3 { font-family: 'Fredoka', sans-serif; margin: 0; }
@@ -178,3 +178,44 @@ html, body { overscroll-behavior: none; -webkit-touch-callout: none; -webkit-tap
   .catch-name { font-size: 28px; }
   .catch-actions button { padding: 10px 14px; }
 }
+
+/* ---------- Touch behaviour, held reel, feedback ---------- */
+html, body, #ui, #scene { touch-action: none; -webkit-user-select: none; user-select: none; }
+.modal-body, .list, .scroll { touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+button { touch-action: manipulation; }
+
+button.warn:not(.toast) { background: linear-gradient(#ffd0c0, #f08a6a); }
+
+.reel-btn {
+  position: absolute; left: 16px; bottom: calc(28px + env(safe-area-inset-bottom));
+  width: 128px; height: 128px; border-radius: 50%; padding: 0; z-index: 5;
+  font-family: 'Fredoka', sans-serif; font-size: 18px; line-height: 1.1; color: #fff;
+  background: radial-gradient(circle at 40% 30%, #6ac0ff, #2a78d8); border: 4px solid #fff;
+  box-shadow: 0 6px 0 rgba(20, 50, 110, 0.6), 0 8px 22px rgba(0, 0, 0, 0.4);
+}
+.reel-btn.down { transform: translateY(4px) scale(0.96); background: radial-gradient(circle at 40% 30%, #8affb0, #2aa860); box-shadow: 0 2px 0 rgba(20, 90, 50, 0.6), 0 4px 14px rgba(0, 0, 0, 0.4); }
+@media (pointer: fine) { .reel-btn { display: none !important; } }
+
+.fish-meter.danger div { animation: danger 0.5s steps(2) infinite; }
+.fish-bar.danger { border-color: #ff6a5a; box-shadow: 0 0 14px 3px rgba(255, 90, 70, 0.7); }
+@keyframes danger { 0% { filter: none; } 100% { filter: hue-rotate(-60deg) brightness(1.4); } }
+.fish-zone { transition: background 0.08s; }
+.fish-zone.hit { box-shadow: 0 0 12px 2px rgba(140, 255, 140, 0.9); }
+.fish-marker { transition: none; }
+
+@media (max-width: 700px), (max-height: 520px) {
+  .reel-btn { width: 108px; height: 108px; font-size: 15px; left: 12px; }
+  .fish-bar { width: 40px; }
+  .fish-marker { width: 34px; height: 34px; }
+}
+
+/* phones: the right-hand stack drops under the coins and level row, so nothing overlaps */
+@media (max-width: 700px) {
+  .hud-top { flex-direction: row; align-items: center; flex-wrap: nowrap; right: 8px; gap: 6px; }
+  .pill.level { flex: 1; min-width: 0; }
+  .pill.level .small { display: none; }
+  .hud-right { top: calc(62px + env(safe-area-inset-top)); }
+  .hud-buttons button { min-width: 40px; padding: 2px 6px; }
+  .hud-bottom.reeling .hint { display: none; }
+}
+.hud-bottom.reeling .hint { display: none; }

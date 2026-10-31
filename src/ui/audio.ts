@@ -1,11 +1,12 @@
 // Tiny synthesised sounds (WebAudio, no files). The context starts on the first click or key press.
-export type Sfx = 'cast' | 'bite' | 'catch' | 'escape' | 'sell' | 'buy' | 'levelup' | 'rare';
+export type Sfx = 'cast' | 'bite' | 'hook' | 'catch' | 'escape' | 'sell' | 'buy' | 'levelup' | 'rare';
 
 export class Audio {
   private ctx: AudioContext | null = null;
   volume = 0.5;
+  muted = false;
 
-  /** Call from a user gesture. */
+  /** Call from a user gesture (on Android that means a release or click, so it is called on those too). */
   unlock(): void {
     if (!this.ctx) {
       try {
@@ -19,7 +20,7 @@ export class Audio {
 
   private tone(type: OscillatorType, f0: number, f1: number, at: number, dur: number, gain: number): void {
     const c = this.ctx;
-    if (!c || this.volume <= 0) return;
+    if (!c || this.volume <= 0 || this.muted) return;
     const t = c.currentTime + at;
     const o = c.createOscillator();
     const g = c.createGain();
@@ -32,6 +33,13 @@ export class Audio {
     o.connect(g).connect(c.destination);
     o.start(t);
     o.stop(t + dur + 0.05);
+  }
+
+  /** A little ratchet click while the reel is winding in; the pitch climbs as the meter fills. */
+  tick(progress: number): void {
+    if (!this.ctx) return;
+    const f = 300 + progress * 500;
+    this.tone('square', f, f * 0.8, 0, 0.04, 0.07);
   }
 
   play(name: Sfx): void {
@@ -52,6 +60,9 @@ export class Audio {
         break;
       case 'rare':
         for (let k = 0; k < 6; k++) this.tone('triangle', 523 * 1.26 ** k, 523 * 1.26 ** k, k * 0.09, 0.22, 0.22);
+        break;
+      case 'hook':
+        this.tone('triangle', 700, 1400, 0, 0.12, 0.22);
         break;
       case 'escape':
         this.tone('sawtooth', 400, 90, 0, 0.35, 0.16);

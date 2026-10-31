@@ -16,9 +16,24 @@ export interface ModalSpec {
 
 export class Modals {
   private stack: { spec: ModalSpec; el: HTMLElement; body: HTMLElement }[] = [];
+  /** a finger or mouse button is down: redrawing now would replace the button being pressed and lose its click */
+  private pressed = false;
+  private pressedAt = 0;
+  private dirty = false;
 
   constructor(private readonly root: HTMLElement, private readonly game: Game) {
     game.onChange(() => this.refresh());
+    root.addEventListener('pointerdown', () => {
+      this.pressed = true;
+      this.pressedAt = performance.now();
+    }, true);
+    const release = () => {
+      this.pressed = false;
+      // let the click that follows the release run first, then catch up on any redraw we held back
+      if (this.dirty) setTimeout(() => this.refresh(), 0);
+    };
+    window.addEventListener('pointerup', release, true);
+    window.addEventListener('pointercancel', release, true);
   }
 
   get open(): boolean {
@@ -61,6 +76,13 @@ export class Modals {
   }
 
   refresh(): void {
+    // a release we never saw (a drag off the screen) must not freeze the panels for good
+    if (this.pressed && performance.now() - this.pressedAt > 2500) this.pressed = false;
+    if (this.pressed) {
+      this.dirty = true;
+      return;
+    }
+    this.dirty = false;
     for (const m of this.stack) {
       if (m.spec.still) continue;
       const scroll = m.body.querySelector('.scroll')?.scrollTop ?? 0;

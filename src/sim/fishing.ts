@@ -4,7 +4,7 @@ import {
   BITE_MAX_TICKS, BITE_MIN_TICKS, BUCKET_CAPACITY, DISCOVERY_COIN_MULT, DISCOVERY_XP_MULT, FISH_CATCH_RATE, FISH_DRAIN_RATE,
   FISH_GOLD_AT, FISH_LENGTH_LEVEL_BONUS, FISH_LENGTH_SKEW, FISH_SILVER_AT, FISH_SIZE_DIFFICULTY, FISH_SIZE_REEL_TIME,
   FISH_SIZE_TIRE_TIME, FISH_START_PROGRESS, FISH_TIRE_CATCH_BOOST, FISH_TIRE_DRAIN_RELIEF, FISH_TIRE_SLOWDOWN, FISH_TIRE_TICKS,
-  FISH_ZONE_DAMP, FISH_ZONE_GRAVITY, FISH_ZONE_LIFT, QUALITY_PRICE_MULT, RARE_BELOW, XP_PRICE_POWER, XP_QUALITY_MULT,
+  FISH_ZONE_DAMP, FISH_ZONE_GRAVITY, FISH_ZONE_LIFT, PERFECT_HOOK_BONUS, PERFECT_HOOK_TICKS, PERFECT_HOOK_XP, QUALITY_PRICE_MULT, RARE_BELOW, XP_PRICE_POWER, XP_QUALITY_MULT,
 } from '../data/balance';
 import { FISH, getFish } from '../data/fish';
 import { BAITS, LINES, REELS, RODS } from '../data/gear';
@@ -82,6 +82,9 @@ export function cast(state: GameState, ev: SimEvent[]): Result {
     size,
     difficulty: fishDifficulty(def, size),
     reelTicks: 0,
+    sinceBite: 0,
+    hooked: false,
+    perfect: false,
   };
   state.stats.casts += 1;
   ev.push({ type: 'cast' });
@@ -118,12 +121,23 @@ export function tickFishing(state: GameState, ev: SimEvent[]): void {
     fs.biteIn -= 1;
     if (fs.biteIn <= 0) {
       fs.phase = 'reel';
+      // already holding at the bite counts as hooked, but earns no head start: you have to react to the bite
+      fs.hooked = fs.holding;
       ev.push({ type: 'bite' });
     }
     return;
   }
   const def = getFish(fs.species);
   fs.reelTicks += 1;
+  fs.sinceBite += 1;
+  if (fs.holding && !fs.hooked) {
+    fs.hooked = true;
+    if (fs.sinceBite <= PERFECT_HOOK_TICKS) {
+      fs.perfect = true;
+      fs.progress = Math.min(0.9, fs.progress + PERFECT_HOOK_BONUS);
+      ev.push({ type: 'hook' });
+    }
+  }
   const tired = fishFatigue(fs);
   // The fish moves toward a target, picking a new one every so often (faster for harder fish, slower once tired).
   if (--fs.retarget <= 0) {
@@ -180,11 +194,11 @@ function landFish(state: GameState, ev: SimEvent[], wornOut: boolean): void {
     rec.bestCm = fs.lenCm;
     rec.bestQ = q;
   }
-  const xp = Math.round((3 + def.price ** XP_PRICE_POWER * (1 + fs.difficulty)) * XP_QUALITY_MULT[q] * (discovered ? DISCOVERY_XP_MULT : 1));
+  const xp = Math.round((3 + def.price ** XP_PRICE_POWER * (1 + fs.difficulty)) * XP_QUALITY_MULT[q] * (discovered ? DISCOVERY_XP_MULT : 1) * (fs.perfect ? PERFECT_HOOK_XP : 1));
   const bonus = discovered ? Math.round(def.price * DISCOVERY_COIN_MULT) : 0;
   state.coins += bonus;
   state.stats.earned += bonus;
-  ev.push({ type: 'catch', fish, record, discovered, xp, bonus, wornOut });
+  ev.push({ type: 'catch', fish, record, discovered, xp, bonus, wornOut, perfect: fs.perfect });
   addXp(state, ev, xp);
 }
 

@@ -31,6 +31,10 @@ export interface FishingState {
   size: number;
   difficulty: number;
   reelTicks: number;
+  /** ticks since the bite, whether the first press has happened, and whether it came in time */
+  sinceBite: number;
+  hooked: boolean;
+  perfect: boolean;
 }
 
 export interface FishRecord {

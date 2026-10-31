@@ -20,6 +20,13 @@ export const FISH_ZONE_GRAVITY = 0.008;
 export const FISH_ZONE_DAMP = 0.86;
 export const FISH_START_PROGRESS = 0.3;
 export const FISH_CATCH_RATE = 0.014;
+/**
+ * Setting the hook: press to reel within PERFECT_HOOK_TICKS of the bite and the meter jumps by PERFECT_HOOK_BONUS
+ * (and the catch earns PERFECT_HOOK_XP times the XP). A late press still works, just without the head start.
+ */
+export const PERFECT_HOOK_TICKS = 8;
+export const PERFECT_HOOK_BONUS = 0.15;
+export const PERFECT_HOOK_XP = 1.25;
 export const FISH_DRAIN_RATE = 0.011;
 /** a bigger fish takes longer to reel in: catch rate is divided by 1 + size × this */
 export const FISH_SIZE_REEL_TIME = 0.8;
