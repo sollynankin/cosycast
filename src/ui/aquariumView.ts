@@ -52,11 +52,13 @@ export class AquariumView {
       this.running = false;
       return;
     }
+    requestAnimationFrame((n) => this.frame(n));
+    // 30 frames a second is plenty for a fish tank and leaves the phone's time for scrolling the panel
+    if (now - this.last < 30) return;
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
     this.t += dt;
     this.draw(dt);
-    requestAnimationFrame((n) => this.frame(n));
   }
 
   private draw(dt: number): void {

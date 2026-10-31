@@ -48,7 +48,7 @@ export class TackleBox {
       if (this.tab === tab) this.modals.close('box');
       else {
         this.tab = tab;
-        this.modals.refresh();
+        this.modals.refresh(false);
       }
       return;
     }
@@ -64,7 +64,7 @@ export class TackleBox {
 
   private render(): HTMLElement {
     const tabs = h('div.book-tabs', TABS.map((t) =>
-      h(`button.tab${t.id === this.tab ? '.on' : ''}`, { title: `${t.label} (${t.key})`, onclick: () => { this.tab = t.id; this.modals.refresh(); } }, t.label, h('span.keyhint', t.key))));
+      h(`button.tab${t.id === this.tab ? '.on' : ''}`, { title: `${t.label} (${t.key})`, onclick: () => { this.tab = t.id; this.modals.refresh(false); } }, t.label, h('span.keyhint', t.key))));
     const body = { bucket: () => this.bucket(), shop: () => this.shop(), map: () => this.places(), aquarium: () => this.aquarium(), log: () => this.log() }[this.tab]();
     return h('div.book', tabs, body);
   }

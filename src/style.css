@@ -167,7 +167,8 @@ html, body { overscroll-behavior: none; -webkit-touch-callout: none; -webkit-tap
   .modal.bare { height: auto; width: auto; }
   .modal-head { padding: calc(8px + env(safe-area-inset-top)) 14px 6px; }
   .modal-body { padding: 8px 12px calc(14px + env(safe-area-inset-bottom)); }
-  .list { max-height: none; }
+  /* the panel body is the one thing that scrolls: nested scrollers eat the drag */
+  .list, .list.short { max-height: none; overflow: visible; }
   .fish-icon { width: 56px; height: 56px; }
   .fish-entry, .shop-row, .place { gap: 8px; padding: 6px 8px; }
   .actions { justify-content: flex-start; }
@@ -181,8 +182,14 @@ html, body { overscroll-behavior: none; -webkit-touch-callout: none; -webkit-tap
 
 /* ---------- Touch behaviour, held reel, feedback ---------- */
 html, body, #ui, #scene { touch-action: none; -webkit-user-select: none; user-select: none; }
-.modal-body, .list, .scroll { touch-action: pan-y; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+/* Everything inside a panel lets a finger scroll it up and down. The list never blocks scroll chaining: when a list
+   is not itself scrollable (every phone layout) the drag must pass on to the panel body. */
+.modal-backdrop, .modal, .modal * { touch-action: pan-y; }
+.modal-body { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; flex: 1 1 auto; min-height: 0; }
+.modal.bare .modal-body { overflow: visible; }
+.fish-entry, .shop-row, .place { content-visibility: auto; contain-intrinsic-size: auto 84px; }
 button { touch-action: manipulation; }
+.modal button { touch-action: pan-y; }
 
 button.warn:not(.toast) { background: linear-gradient(#ffd0c0, #f08a6a); }
 

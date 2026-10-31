@@ -20,13 +20,17 @@ window.visualViewport?.addEventListener('resize', () => scene.resize());
 
 if (!saved) app.hud.toast(window.matchMedia('(pointer: coarse)').matches ? 'Welcome! Tap to cast, then press and hold to reel.' : 'Welcome! Press Space or click to cast, then hold to reel.', 'good');
 
+/** the same test the stylesheet uses for panels that fill the screen */
+const smallScreen = window.matchMedia('(max-width: 700px), (max-height: 520px)');
+
 let last = performance.now();
 function frame(now: number): void {
   const dt = Math.min(0.1, (now - last) / 1000);
   last = now;
   game.advance(dt);
   const fs = game.state.fishing;
-  scene.draw(game.state, dt, fs?.phase === 'reel' && fs.holding ? 1 : 0);
+  // a panel that fills the phone screen hides the picture: not drawing it keeps scrolling the panel smooth
+  if (!(app.modals.covering && smallScreen.matches)) scene.draw(game.state, dt, fs?.phase === 'reel' && fs.holding ? 1 : 0);
   app.frame();
   app.hud.render();
   requestAnimationFrame(frame);
